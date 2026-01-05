@@ -1,11 +1,14 @@
 import streamlit as st
 from roboflow import Roboflow
 from PIL import Image
-import io
+import os
 
 # --- CONFIGURATION ---
-API_KEY = "qPnO1IYxFW6y0ZnMw3U9"
+API_KEY = os.getenv("ROBOFLOW_API_KEY")
 FULL_MODEL_ID = "lab-e3lrr/3"  # Your Project ID + Version
+
+if not API_KEY:
+    raise ValueError("Roboflow API key not found. Set environment variable ROBOFLOW_API_KEY")
 
 # --- CUSTOM URL SETUP ---
 # We define the custom serverless URL here as requested
