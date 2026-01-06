@@ -6,7 +6,7 @@ import requests
 import io
 
 # --- CONFIGURATION ---
-API_KEY = os.getenv("ROBOFLOW_API_KEY")
+API_KEY = st.secrets("ROBOFLOW_API_KEY")
 FULL_MODEL_ID = "lab-e3lrr/3"  # Project/Version
 # Use the standard Hosted API URL for visualization
 SERVERLESS_URL = "https://detect.roboflow.com"
