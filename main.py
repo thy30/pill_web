@@ -116,41 +116,50 @@ if image_data is not None:
 
     with st.spinner('Analyzing pill...'):
         try:
-            # Run inference
-            prediction = model.predict(temp_filename, confidence=40, overlap=30).json()
+            # 1. Run inference
+            result_json = model.predict(temp_filename, confidence=40, overlap=30).json()
             
-            if not prediction['predictions']:
+            # 2. Extract unique pills (Deduplication logic)
+            # This creates a dictionary where the 'class' is the key, keeping only one entry per pill type
+            unique_pills = {p['class']: p for p in result_json['predictions']}.values()
+            
+            if not unique_pills:
                 st.warning("No pills detected. Please try moving closer.")
             else:
-                top_prediction = prediction['predictions'][0]
-                detected_class = top_prediction['class']
-                confidence = top_prediction['confidence']
+                st.image(image, caption="Analysis Complete", use_column_width=True)
+                
+                # --- LOOP THROUGH UNIQUE DETECTED PILLS ---
+                for i, pill in enumerate(unique_pills):
+                    detected_class = pill['class']
+                    confidence = pill['confidence']
+                    
+                    st.divider()
+                    st.markdown(f"### Pill #{i+1}: {detected_class}")
 
-                st.image(image, caption=f"Detected: {detected_class}", use_column_width=True)
-                
-                # --- MATCHING LOGIC ---
-                key_to_search = detected_class.lower()
-                matched_info = None
-                
-                if key_to_search in PILL_INFO:
-                    matched_info = PILL_INFO[key_to_search]
-                else:
-                    for key, info in PILL_INFO.items():
-                        if key in key_to_search or key_to_search in key:
-                            matched_info = info
-                            break
-                
-                if matched_info:
-                    st.success(f"Detected: **{matched_info['name']}** ({confidence:.1%} confidence)")
-                    col1, col2 = st.columns(2)
-                    with col1:
-                        st.markdown(f"**📖 Description:**\n{matched_info['description']}")
-                        st.markdown(f"**⏰ When to take:**\n{matched_info['timing']}")
-                    with col2:
-                        st.info(f"**💡 Suggestion:**\n{matched_info['advice']}")
-                else:
-                    st.error(f"Detected **{detected_class}**, but details are missing from the database.")
-                    st.json(prediction)
-
+                    # --- MATCHING LOGIC ---
+                    key_to_search = detected_class.lower()
+                    matched_info = None
+                    
+                    # Search for the pill in your PILL_INFO database
+                    if key_to_search in PILL_INFO:
+                        matched_info = PILL_INFO[key_to_search]
+                    else:
+                        for key, info in PILL_INFO.items():
+                            if key in key_to_search or key_to_search in key:
+                                matched_info = info
+                                break
+                    
+                    # --- DISPLAY RESULTS ---
+                    if matched_info:
+                        st.success(f"Identified as: **{matched_info['name']}** ({confidence:.1%} confidence)")
+                        col1, col2 = st.columns(2)
+                        with col1:
+                            st.markdown(f"**📖 Description:**\n{matched_info['description']}")
+                            st.markdown(f"**⏰ When to take:**\n{matched_info['timing']}")
+                        with col2:
+                            st.info(f"**💡 Suggestion:**\n{matched_info['advice']}")
+                    else:
+                        st.error(f"Detected **{detected_class}**, but this pill is not in our database.")
+        
         except Exception as e:
             st.error(f"An error occurred: {e}")
