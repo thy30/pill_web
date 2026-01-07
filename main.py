@@ -1,9 +1,7 @@
 import streamlit as st
 from roboflow import Roboflow
 from PIL import Image
-import os
 import requests
-import io
 
 # --- CONFIGURATION ---
 API_KEY = st.secrets["ROBOFLOW_API_KEY"]
@@ -50,7 +48,7 @@ PILL_INFO = {
         "type": "Analgesic / Antipyretic",
         "description": "Common painkiller for aches and fever.",
         "timing": "Take every 4-6 hours.",
-        "advice": "✅ Safe for most people if dosage is respected."
+        "advice": "🔴 Do not take more than four doses in 24 hours."
     }
 }
 
