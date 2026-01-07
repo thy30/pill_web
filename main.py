@@ -92,12 +92,12 @@ if image_data is not None:
     with st.spinner('Scanning for pills...'):
         try:
             # 1. GET DATA: Run prediction to get JSON coordinates
-            prediction = model.predict(temp_filename, confidence=40, overlap=30)
+            prediction = model.predict(temp_filename, confidence=70, overlap=30)
             result_json = prediction.json()
             
             # 2. GET VISUAL: Fetch the image with boxes from the Hosted URL
             project_id, version = FULL_MODEL_ID.split("/")
-            viz_url = f"{SERVERLESS_URL}/{project_id}/{version}?api_key={API_KEY}&format=image&labels=on&stroke=2"
+            viz_url = f"{SERVERLESS_URL}/{project_id}/{version}?api_key={API_KEY}&format=image&labels=on&stroke=2&confidence=70"
             
             # Send the image to Roboflow to get the 'annotated' version back
             with open(temp_filename, "rb") as f:
