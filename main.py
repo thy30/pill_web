@@ -2,6 +2,7 @@ import streamlit as st
 from roboflow import Roboflow
 from PIL import Image
 import requests
+import time
 
 # --- CONFIGURATION ---
 API_KEY = st.secrets["ROBOFLOW_API_KEY"]
@@ -82,6 +83,7 @@ with tab2:
 
 # --- INFERENCE & DISPLAY LOGIC ---
 if image_data is not None:
+    start_time = time.perf_counter()
     # Save temporary file for the API
     temp_filename = "temp_pill.jpg"
     img = Image.open(image_data)
@@ -92,9 +94,13 @@ if image_data is not None:
     with st.spinner('Scanning for pills...'):
         try:
             # 1. GET DATA: Run prediction to get JSON coordinates
+            robostart_time = time.perf_counter()
             prediction = model.predict(temp_filename, confidence=70, overlap=30)
             result_json = prediction.json()
-            
+            roboend_time = time.perf_counter()
+            robo_time = roboend_time - robostart_time
+            st.success(f"Detections from Roboflow: {robo_time:.3f} seconds")
+                
             # 2. GET VISUAL: Fetch the image with boxes from the Hosted URL
             project_id, version = FULL_MODEL_ID.split("/")
             viz_url = f"{SERVERLESS_URL}/{project_id}/{version}?api_key={API_KEY}&format=image&labels=on&stroke=2&confidence=70"
@@ -146,3 +152,6 @@ if image_data is not None:
 
         except Exception as e:
             st.error(f"Error: {e}")
+    end_time = time.perf_counter()
+    total_time = end_time - start_time
+    st.success(f"Detection completed: {total_time:.3f} seconds")
